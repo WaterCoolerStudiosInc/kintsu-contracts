@@ -185,7 +185,7 @@ mod tests {
             &ctx.stake_contract,
             &ctx.bob,
             String::from("wrap_tokens"),
-            Some(vec![100_000_000_u128.to_string()]),
+            Some(vec![100_u128.to_string()]),
             None,
             transcoder_governance_staking(),
         ).unwrap();
