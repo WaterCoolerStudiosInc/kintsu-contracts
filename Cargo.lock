@@ -2442,6 +2442,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "620a1d43d70e142b1d46a929af51d44f383db9c7a2ec122de2cd992ccfcf3c18"
 
 [[package]]
+name = "simple_ex"
+version = "0.1.0"
+dependencies = [
+ "governance_nft",
+ "ink",
+ "parity-scale-codec",
+ "psp22",
+ "psp34",
+ "scale-info",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"

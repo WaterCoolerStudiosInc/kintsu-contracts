@@ -123,19 +123,19 @@ mod governance_nft {
         }
         #[ink(message,selector = 1337)]
         pub fn mint(&mut self, to:AccountId,weight:u128) -> Result<(), PSP34Error> {
-            //assert_eq!(self.env().caller(),self.admin);
+            assert_eq!(self.env().caller(),self.admin);
             
-            /*self.mint_count+=1;
+            self.mint_count+=1;
             let curr_id=Id::U128(self.mint_count);
             let g_metadata=GovernanceData{
                 block_created:self.env().block_timestamp(),
                 vote_weight:weight
             };
-            */
-            //self.token_governance_data.insert( self.mint_count,&g_metadata);
-            //let events = self.data.mint(to, curr_id)?;
             
-            //self.emit_events(events);
+            self.token_governance_data.insert( self.mint_count,&g_metadata);
+            let events = self.data.mint(to, curr_id)?;
+            
+            self.emit_events(events);
             Ok(())
         }
       

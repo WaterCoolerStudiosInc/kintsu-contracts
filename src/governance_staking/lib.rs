@@ -100,13 +100,13 @@ mod staking{
             self.nft
         }
        #[ink(message)]
-       pub fn wrap_tokens(&mut self, token_value:u128)-> Result<(), StakingError>{
+       pub fn mint_nft(&mut self, token_value:u128)-> Result<(), StakingError>{
         let caller = Self::env().caller();
         //let now = Self::env().block_timestamp();
 
-        //self.transfer_psp22_from(&caller, &Self::env().account_id(), token_value)?;
+        self.transfer_psp22_from(&caller, &Self::env().account_id(), token_value)?;
         
-        self.mint_psp34(caller,token_value)?;
+        //self.mint_psp34(caller,token_value)?;
         Ok(())
         }
       #[ink(message)]

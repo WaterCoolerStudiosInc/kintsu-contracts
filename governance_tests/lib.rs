@@ -184,7 +184,7 @@ mod tests {
             sess,
             &ctx.stake_contract,
             &ctx.bob,
-            String::from("wrap_tokens"),
+            String::from("mint_nft"),
             Some(vec![100_u128.to_string()]),
             None,
             transcoder_governance_staking(),

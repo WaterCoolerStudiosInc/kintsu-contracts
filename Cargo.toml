@@ -10,10 +10,12 @@ members = [
     "src/governor",
     "src/governance_nft",
     "src/governance_staking",
-    "src/governance_token"
+    "src/governance_token",
+    "src/simple_ex"
 
 ]
 exclude = [
     "drink_tests",
-    "governance_tests"
+    "governance_tests",
+    "example_test"
 ]
