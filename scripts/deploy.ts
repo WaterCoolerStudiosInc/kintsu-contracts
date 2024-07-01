@@ -119,9 +119,12 @@ const main = async (validators: string[]) => {
 
   console.log('===== Agent Configuration =====')
 
+  const poolIds = []
+
   for (const validator of validators) {
     const lastPoolIdCodec = await api.query.nominationPools.lastPoolId()
     const nextPoolId = BigInt(lastPoolIdCodec.toString()) + 1n
+
     console.log(`Adding nomination agent (validator: ${validator} & PID #${nextPoolId}) ...`)
     await contractTx(
       api,
@@ -131,8 +134,10 @@ const main = async (validators: string[]) => {
       {
         value: minNominatorBond + existentialDeposit,
       },
-      [account.address, validator, nextPoolId, minNominatorBond, existentialDeposit],
+      [account.address, validator, minNominatorBond, existentialDeposit],
     )
+
+    poolIds.push(nextPoolId)
   }
 
   console.log('Fetching agents ...')
@@ -144,17 +149,30 @@ const main = async (validators: string[]) => {
   )
   const [total_weight, agents] = decodeOutput(get_agents_result, registry_instance, 'get_agents').output
 
-  if (chainId === 'development') {
-    console.log('Equally weighting agents ...')
+  for (let i=0; i<agents.length; i++) {
+    const agent = agents[i];
+    const poolId = poolIds[i];
+
+    console.log(`Initializing nomination agent ${agent.address} with pool id #${poolId}...`)
     await contractTx(
       api,
       account,
       registry_instance,
-      'update_agents',
+      'initialize_agent',
       {},
-      [agents.map((a) => a.address), [100, 100]],
+      [agent.address, poolId],
     )
   }
+
+  console.log('Equally weighting agents ...')
+  await contractTx(
+    api,
+    account,
+    registry_instance,
+    'update_agents',
+    {},
+    [agents.map((a) => a.address), [1000, 1000]],
+  )
 
   console.log('===== Contract Locations =====')
 

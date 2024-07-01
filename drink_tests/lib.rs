@@ -99,31 +99,40 @@ mod tests {
         sess.set_actor(bob.clone());
 
         // ADD AGENTS
-        let sess = helpers::call_add_agent(
+        let (new_agent, sess) = helpers::call_add_agent(
             sess,
             &registry,
             &bob,
             &bob,
             &validator1,
-            1,
             100e12 as u128,
             500,
         )?;
-        let sess = helpers::call_add_agent(
+        let sess = helpers::call_initialize_agent(
+            sess,
+            &registry,
+            &bob,
+            &new_agent,
+            1,
+        )?;
+        let (new_agent, sess) = helpers::call_add_agent(
             sess,
             &registry,
             &bob,
             &bob,
             &validator2,
-            2,
             100e12 as u128,
             500,
         )?;
-
-        let (_, agents, sess) = helpers::get_agents(
+        let sess = helpers::call_initialize_agent(
             sess,
             &registry,
+            &bob,
+            &new_agent,
+            2,
         )?;
+
+        let (_, agents, sess) = helpers::get_agents(sess, &registry)?;
 
         let sess = helpers::call_update_agents(
             sess,
@@ -1249,13 +1258,50 @@ mod tests {
             &ctx.charlie, // does not have `helpers::RoleType::AddAgent`
             &ctx.charlie,
             &ctx.validators[2],
-            3,
             100e12 as u128,
             500,
         ) {
             Ok(_) => panic!("Should panic because caller is restricted"),
             Err(_) => (),
         };
+    }
+    #[test]
+    fn test_nominator_initialization_panic_already_initialized() {
+        let ctx = setup().unwrap();
+
+        // Add new nominator
+        let (new_agent, sess) = helpers::call_add_agent(
+            ctx.sess,
+            &ctx.registry,
+            &ctx.bob,
+            &ctx.charlie,
+            &ctx.validators[2],
+            100e12 as u128,
+            500,
+        )
+            .unwrap();
+
+        // Initialize nominator
+        let sess = helpers::call_initialize_agent(
+            sess,
+            &ctx.registry,
+            &ctx.bob,
+            &new_agent,
+            3,
+        )
+            .unwrap();
+
+        // Attempt to initialized again
+        match helpers::call_initialize_agent(
+            sess,
+            &ctx.registry,
+            &ctx.bob,
+            &new_agent,
+            3,
+        ) {
+            Ok(_) => panic!("Should panic because agent is already initialized"),
+            Err(_) => (),
+        }
     }
     #[test]
     fn test_nominator_update_panic_because_caller_restricted() {
@@ -1269,6 +1315,33 @@ mod tests {
             vec![0.to_string()],
         ) {
             Ok(_) => panic!("Should panic because caller is restricted"),
+            Err(_) => (),
+        };
+    }
+    #[test]
+    fn test_nominator_update_panic_because_not_initialized() {
+        let ctx = setup().unwrap();
+
+        // Add nomination agent but do not initialize
+        let (new_agent, sess) = helpers::call_add_agent(
+            ctx.sess,
+            &ctx.registry,
+            &ctx.bob,
+            &ctx.bob,
+            &ctx.validators[2],
+            100e12 as u128,
+            500,
+        )
+            .unwrap();
+
+        match helpers::call_update_agents(
+            sess,
+            &ctx.registry,
+            &ctx.bob,
+            vec![new_agent.to_string()],
+            vec![500.to_string()],
+        ) {
+            Ok(_) => panic!("Should panic because agent is not initialized"),
             Err(_) => (),
         };
     }
@@ -1352,15 +1425,21 @@ mod tests {
             .unwrap();
 
         // Add nomination agent
-        let sess = helpers::call_add_agent(
+        let (new_agent, sess) = helpers::call_add_agent(
             sess,
             &ctx.registry,
             &ctx.bob,
             &ctx.bob,
             &ctx.validators[2],
-            3,
             100e12 as u128,
             500,
+        )?;
+        let sess = helpers::call_initialize_agent(
+            sess,
+            &ctx.registry,
+            &ctx.bob,
+            &new_agent,
+            3,
         )?;
 
         let (total_weight_after, agents_after, sess) = helpers::get_agents(
@@ -1424,15 +1503,21 @@ mod tests {
             .unwrap();
 
         // Add nomination agent
-        let sess = helpers::call_add_agent(
+        let (new_agent, sess) = helpers::call_add_agent(
             sess,
             &ctx.registry,
             &ctx.bob,
             &ctx.bob,
             &ctx.validators[2],
-            3,
             100e12 as u128,
             500,
+        )?;
+        let sess = helpers::call_initialize_agent(
+            sess,
+            &ctx.registry,
+            &ctx.bob,
+            &new_agent,
+            3,
         )?;
 
         let (total_weight_after, agents_after, sess) = helpers::get_agents(

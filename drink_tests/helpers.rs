@@ -38,10 +38,9 @@ pub fn call_add_agent(
     sender: &AccountId32,
     admin: &AccountId32,
     validator: &AccountId32,
-    pool_id: u32,
     pool_create_amount: u128,
     existential_deposit: u128,
-) -> Result<Session<MinimalRuntime>, Box<dyn Error>> {
+) -> Result<(AccountId32, Session<MinimalRuntime>), Box<dyn Error>> {
     let sess: Session<MinimalRuntime> = call_function(
         sess,
         &registry,
@@ -50,11 +49,34 @@ pub fn call_add_agent(
         Some([
             admin.to_string(),
             validator.to_string(),
-            pool_id.to_string(),
             pool_create_amount.to_string(),
             existential_deposit.to_string(),
         ].to_vec()),
         Some(pool_create_amount + existential_deposit),
+        transcoder_registry(),
+    )?;
+
+    let (_, agents, sess) = get_agents(sess, &registry)?;
+
+    Ok((agents[agents.len() - 1].address.clone(), sess))
+}
+pub fn call_initialize_agent(
+    sess: Session<MinimalRuntime>,
+    registry: &AccountId32,
+    sender: &AccountId32,
+    agent: &AccountId32,
+    pool_id: u32,
+) -> Result<Session<MinimalRuntime>, Box<dyn Error>> {
+    let sess: Session<MinimalRuntime> = call_function(
+        sess,
+        &registry,
+        &sender,
+        String::from("initialize_agent"),
+        Some([
+            agent.to_string(),
+            pool_id.to_string(),
+        ].to_vec()),
+        None,
         transcoder_registry(),
     )?;
     Ok(sess)
@@ -269,6 +291,7 @@ pub fn get_role_owner(
 pub struct Agent {
     pub address: AccountId32,
     pub weight: u64,
+    pub initialized: bool,
 }
 pub fn get_agents(
     mut sess: Session<MinimalRuntime>,
@@ -361,7 +384,7 @@ pub fn query_nominator_balance(
         sess,
         &nominator,
         &AccountId32::new([1u8; 32]),
-        String::from("get_unbonded_value"),
+        String::from("INominationAgent::get_unbonding_value"),
         None,
         None,
         transcoder_nominator(),
@@ -373,7 +396,7 @@ pub fn query_nominator_balance(
         sess,
         &nominator,
         &AccountId32::new([1u8; 32]),
-        String::from("get_staked_value"),
+        String::from("INominationAgent::get_staked_value"),
         None,
         None,
         transcoder_nominator(),

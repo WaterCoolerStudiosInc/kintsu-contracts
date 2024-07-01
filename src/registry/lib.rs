@@ -20,6 +20,7 @@ pub mod registry {
         DuplicateAgent,
         AgentNotFound,
         ActiveAgent,
+        Initialization,
         InvalidPermissions,
         InvalidRole,
         NoChange,
@@ -58,10 +59,16 @@ pub mod registry {
     pub struct Agent {
         pub address: AccountId,
         pub weight: u64,
+        pub initialized: bool,
     }
 
     #[ink(event)]
     pub struct AgentAdded {
+        #[ink(topic)]
+        agent: AccountId,
+    }
+    #[ink(event)]
+    pub struct AgentInitialized {
         #[ink(topic)]
         agent: AccountId,
     }
@@ -146,7 +153,6 @@ pub mod registry {
             &mut self,
             admin: AccountId,
             validator: AccountId,
-            pool_id: u32,
             pool_create_amount: Balance,
             existential_deposit: Balance,
         ) -> Result<AccountId, RegistryError> {
@@ -162,7 +168,6 @@ pub mod registry {
                     self.vault,
                     admin,
                     validator,
-                    pool_id,
                     pool_create_amount,
                     existential_deposit,
                 )
@@ -178,6 +183,7 @@ pub mod registry {
             self.agents.push(Agent {
                 address: agent_address,
                 weight: 0,
+                initialized: false,
             });
 
             Self::env().emit_event(
@@ -189,9 +195,52 @@ pub mod registry {
             Ok(agent_address)
         }
 
-        /// Update existing nomination agents
+        /// Configures an agent with the necessary information to integrate with Kintsu.
+        /// Ensures agent has all nomination pool roles (Root, Nominator, Bouncer).
+        /// Sets nomination pool status to Blocked to disallow others from joining.
+        /// Nominates to the validator specified in `create_agent`.
+        ///
+        /// Caller must have the AddAgent role.
+        /// Agent must NOT be initialized.
+        #[ink(message)]
+        pub fn initialize_agent(
+            &mut self,
+            agent: AccountId,
+            pool_id: u32,
+        ) -> Result<(), RegistryError> {
+            let caller = Self::env().caller();
+
+            if caller != self.roles.get(RoleType::AddAgent).unwrap().account {
+                return Err(RegistryError::InvalidPermissions);
+            }
+
+            if let Some(index) = self.agents.iter().position(|a| a.address == agent) {
+                // Must be un-initialized
+                if self.agents[index].initialized == true {
+                    return Err(RegistryError::Initialization);
+                }
+
+                let mut agent_contract: contract_ref!(INominationAgent) = agent.into();
+                agent_contract.initialize(pool_id).expect("Agent becomes initialized");
+
+                self.agents[index].initialized = true;
+
+                Self::env().emit_event(
+                    AgentInitialized {
+                        agent,
+                    }
+                );
+            } else {
+                return Err(RegistryError::AgentNotFound);
+            }
+
+            Ok(())
+        }
+
+        /// Update weight of existing nomination agents
         ///
         /// Caller must have the UpdateAgents role.
+        /// Agent must be initialized.
         #[ink(message)]
         pub fn update_agents(
             &mut self,
@@ -210,16 +259,18 @@ pub mod registry {
 
             for (args_index, &agent) in agents.iter().enumerate() {
                 if let Some(index) = self.agents.iter().position(|a| a.address == agent) {
+                    // Must be initialized
+                    if self.agents[index].initialized == false {
+                        return Err(RegistryError::Initialization);
+                    }
+
                     let old_weight = self.agents[index].weight;
                     let new_weight = new_weights[args_index];
 
                     self.total_weight -= old_weight;
                     self.total_weight += new_weight;
 
-                    self.agents[index] = Agent {
-                        address: agent,
-                        weight: new_weight,
-                    };
+                    self.agents[index].weight = new_weight;
 
                     Self::env().emit_event(
                         AgentUpdated {
@@ -242,6 +293,7 @@ pub mod registry {
         /// Caller must have the RemoveAgent role.
         /// Agent must have no AZERO staked (excludes initial bond).
         /// Agent must have no AZERO unbonding.
+        /// Agent must be initialized.
         #[ink(message)]
         pub fn remove_agent(
             &mut self,
@@ -254,6 +306,11 @@ pub mod registry {
             }
 
             if let Some(index) = self.agents.iter().position(|a| a.address == agent) {
+                // Must be initialized
+                if self.agents[index].initialized == false {
+                    return Err(RegistryError::Initialization);
+                }
+
                 let mut agent_contract: contract_ref!(INominationAgent) = agent.into();
 
                 // Do not delete agents with AZERO staked

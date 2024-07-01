@@ -8,7 +8,7 @@ pub use crate::nomination_agent::NominationAgentRef;
 
 #[ink::contract]
 mod nomination_agent {
-    use crate::data::{BondExtra, MultiAddress, NominationCall, PoolState, RuntimeCall};
+    use crate::data::{BondExtra, ConfigOp, MultiAddress, NominationCall, PoolState, RuntimeCall};
     use crate::errors::RuntimeError;
     use crate::traits::INominationAgent;
     use ink::env::Error as EnvError;
@@ -21,7 +21,7 @@ mod nomination_agent {
         registry: AccountId,
         admin: AccountId,
         validator: AccountId,
-        pool_id: u32,
+        pool_id: Option<u32>,
         staked: u128,
         unbonding: u128,
         creation_bond: u128,
@@ -45,7 +45,7 @@ mod nomination_agent {
                 registry: account_id,
                 admin: account_id,
                 validator: account_id,
-                pool_id: 0,
+                pool_id: None,
                 staked: 0,
                 unbonding: 0,
                 creation_bond: 0,
@@ -57,7 +57,6 @@ mod nomination_agent {
             vault: AccountId,
             admin: AccountId,
             validator: AccountId,
-            pool_id: u32,
             creation_bond: u128,
             existential_deposit: u128,
         ) -> Self {
@@ -72,7 +71,7 @@ mod nomination_agent {
                 registry: Self::env().caller(),
                 admin,
                 validator,
-                pool_id,
+                pool_id: None,
                 staked: 0,
                 unbonding: 0,
                 creation_bond,
@@ -89,29 +88,58 @@ mod nomination_agent {
                     }
                 )).unwrap();
 
-            // Disallow others to join nomination pool
-            nomination_agent.env()
-                .call_runtime(&RuntimeCall::NominationPools(
-                    NominationCall::SetState {
-                        pool_id,
-                        state: PoolState::Blocked,
-                    }
-                )).unwrap();
-
-            // Nominate to validator
-            nomination_agent.env()
-                .call_runtime(&RuntimeCall::NominationPools(
-                    NominationCall::Nominate {
-                        pool_id,
-                        validators: [validator].to_vec(),
-                    }
-                )).unwrap();
-
             nomination_agent
         }
     }
 
     impl INominationAgent for NominationAgent {
+        #[ink(message, selector = 0)]
+        fn initialize(&mut self, pool_id: u32) -> Result<(), RuntimeError> {
+            // Restricted to registry
+            if Self::env().caller() != self.registry {
+                return Err(RuntimeError::Unauthorized);
+            }
+
+            // Can only initialize once
+            if self.pool_id.is_some() {
+                return Err(RuntimeError::Initialized);
+            }
+
+            // Ensures agent has all roles (Root, Nominator, Bouncer)
+            let account_id = Self::env().account_id();
+            self.env()
+                .call_runtime(&RuntimeCall::NominationPools(
+                    NominationCall::UpdateRoles {
+                        pool_id,
+                        new_root: ConfigOp::Set(account_id),
+                        new_nominator: ConfigOp::Set(account_id),
+                        new_bouncer: ConfigOp::Set(account_id),
+                    }
+                ))?;
+
+            // Disallow others to join nomination pool
+            self.env()
+                .call_runtime(&RuntimeCall::NominationPools(
+                    NominationCall::SetState {
+                        pool_id,
+                        state: PoolState::Blocked,
+                    }
+                ))?;
+
+            // Nominate to validator
+            self.env()
+                .call_runtime(&RuntimeCall::NominationPools(
+                    NominationCall::Nominate {
+                        pool_id,
+                        validators: [self.validator].to_vec(),
+                    }
+                ))?;
+
+            self.pool_id = Some(pool_id);
+
+            Ok(())
+        }
+
         #[ink(message, payable, selector = 1)]
         fn deposit(&mut self) -> Result<(), RuntimeError> {
             let deposit_amount = Self::env().transferred_value();
@@ -267,7 +295,7 @@ mod nomination_agent {
 
         #[ink(message)]
         fn get_pool_id(&self) -> u32 {
-            self.pool_id
+            self.pool_id.unwrap()
         }
 
         /// Step 1 of 2 in finalizing the nomination pool's lifecycle
@@ -290,7 +318,11 @@ mod nomination_agent {
                 return Err(RuntimeError::Active);
             }
 
-            let pool_id = self.pool_id; // shadow
+            if self.pool_id.is_none() {
+                return Err(RuntimeError::NotInitialized);
+            }
+
+            let pool_id = self.pool_id.unwrap(); // shadow
 
             // Begin pool destruction
             self.env()

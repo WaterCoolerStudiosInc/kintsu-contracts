@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x9756b82fef8cf796c971333dc44c1ea24c5882a9747b34bbf98542089383b42b",
+    "hash": "0x9bd26bacbf207a174f9dc0b9bc851b74878392f54648941bf40cccba2c7f097a",
     "language": "ink! 4.3.0",
     "compiler": "rustc 1.75.0",
     "build_info": {
@@ -34,7 +34,7 @@
             "ink_primitives",
             "ConstructorResult"
           ],
-          "type": 8
+          "type": 9
         },
         "selector": "0x5b7f6cd1"
       },
@@ -73,7 +73,7 @@
               "displayName": [
                 "Hash"
               ],
-              "type": 6
+              "type": 7
             }
           }
         ],
@@ -86,7 +86,7 @@
             "ink_primitives",
             "ConstructorResult"
           ],
-          "type": 8
+          "type": 9
         },
         "selector": "0x9bae9d5e"
       }
@@ -103,25 +103,25 @@
         "displayName": [
           "Balance"
         ],
-        "type": 7
+        "type": 8
       },
       "blockNumber": {
         "displayName": [
           "BlockNumber"
         ],
-        "type": 11
+        "type": 16
       },
       "chainExtension": {
         "displayName": [
           "ChainExtension"
         ],
-        "type": 24
+        "type": 25
       },
       "hash": {
         "displayName": [
           "Hash"
         ],
-        "type": 6
+        "type": 7
       },
       "maxEventTopics": 4,
       "timestamp": {
@@ -148,6 +148,23 @@
         ],
         "docs": [],
         "label": "AgentAdded"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "agent",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 2
+            }
+          }
+        ],
+        "docs": [],
+        "label": "AgentInitialized"
       },
       {
         "args": [
@@ -215,7 +232,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           },
           {
@@ -243,7 +260,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           },
           {
@@ -267,7 +284,7 @@
         "ink",
         "LangError"
       ],
-      "type": 10
+      "type": 11
     },
     "messages": [
       {
@@ -291,21 +308,12 @@
             }
           },
           {
-            "label": "pool_id",
-            "type": {
-              "displayName": [
-                "u32"
-              ],
-              "type": 11
-            }
-          },
-          {
             "label": "pool_create_amount",
             "type": {
               "displayName": [
                 "Balance"
               ],
-              "type": 7
+              "type": 8
             }
           },
           {
@@ -314,7 +322,7 @@
               "displayName": [
                 "Balance"
               ],
-              "type": 7
+              "type": 8
             }
           }
         ],
@@ -340,12 +348,55 @@
       {
         "args": [
           {
+            "label": "agent",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 2
+            }
+          },
+          {
+            "label": "pool_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 16
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Configures an agent with the necessary information to integrate with Kintsu.",
+          " Ensures agent has all nomination pool roles (Root, Nominator, Bouncer).",
+          " Sets nomination pool status to Blocked to disallow others from joining.",
+          " Nominates to the validator specified in `create_agent`.",
+          "",
+          " Caller must have the AddAgent role.",
+          " Agent must NOT be initialized."
+        ],
+        "label": "initialize_agent",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 17
+        },
+        "selector": "0x0e1beecf"
+      },
+      {
+        "args": [
+          {
             "label": "agents",
             "type": {
               "displayName": [
                 "Vec"
               ],
-              "type": 16
+              "type": 19
             }
           },
           {
@@ -354,15 +405,16 @@
               "displayName": [
                 "Vec"
               ],
-              "type": 17
+              "type": 20
             }
           }
         ],
         "default": false,
         "docs": [
-          " Update existing nomination agents",
+          " Update weight of existing nomination agents",
           "",
-          " Caller must have the UpdateAgents role."
+          " Caller must have the UpdateAgents role.",
+          " Agent must be initialized."
         ],
         "label": "update_agents",
         "mutates": true,
@@ -372,7 +424,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 18
+          "type": 17
         },
         "selector": "0xf62a0391"
       },
@@ -395,7 +447,8 @@
           "",
           " Caller must have the RemoveAgent role.",
           " Agent must have no AZERO staked (excludes initial bond).",
-          " Agent must have no AZERO unbonding."
+          " Agent must have no AZERO unbonding.",
+          " Agent must be initialized."
         ],
         "label": "remove_agent",
         "mutates": true,
@@ -405,7 +458,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 18
+          "type": 17
         },
         "selector": "0x9d0d64d9"
       },
@@ -421,7 +474,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 20
+          "type": 21
         },
         "selector": "0xbcfc087a"
       },
@@ -433,7 +486,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           },
           {
@@ -461,7 +514,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 18
+          "type": 17
         },
         "selector": "0xad87f611"
       },
@@ -473,7 +526,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           },
           {
@@ -500,7 +553,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 18
+          "type": 17
         },
         "selector": "0xd5466068"
       },
@@ -512,7 +565,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           }
         ],
@@ -528,7 +581,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 23
+          "type": 24
         },
         "selector": "0x85f65d55"
       },
@@ -540,7 +593,7 @@
               "displayName": [
                 "RoleType"
               ],
-              "type": 22
+              "type": 23
             }
           }
         ],
@@ -554,7 +607,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 23
+          "type": 24
         },
         "selector": "0x553f5414"
       }
@@ -629,7 +682,7 @@
               "layout": {
                 "leaf": {
                   "key": "0x00000000",
-                  "ty": 6
+                  "ty": 7
                 }
               },
               "name": "nomination_agent_hash"
@@ -638,7 +691,7 @@
               "layout": {
                 "leaf": {
                   "key": "0x00000000",
-                  "ty": 7
+                  "ty": 8
                 }
               },
               "name": "nomination_agent_counter"
@@ -676,6 +729,11 @@
                 "name": "weight",
                 "type": 5,
                 "typeName": "u64"
+              },
+              {
+                "name": "initialized",
+                "type": 6,
+                "typeName": "bool"
               }
             ]
           }
@@ -738,6 +796,14 @@
       "id": 6,
       "type": {
         "def": {
+          "primitive": "bool"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": {
+        "def": {
           "composite": {
             "fields": [
               {
@@ -755,7 +821,7 @@
       }
     },
     {
-      "id": 7,
+      "id": 8,
       "type": {
         "def": {
           "primitive": "u128"
@@ -763,7 +829,7 @@
       }
     },
     {
-      "id": 8,
+      "id": 9,
       "type": {
         "def": {
           "variant": {
@@ -771,7 +837,7 @@
               {
                 "fields": [
                   {
-                    "type": 9
+                    "type": 10
                   }
                 ],
                 "index": 0,
@@ -780,7 +846,7 @@
               {
                 "fields": [
                   {
-                    "type": 10
+                    "type": 11
                   }
                 ],
                 "index": 1,
@@ -792,11 +858,11 @@
         "params": [
           {
             "name": "T",
-            "type": 9
+            "type": 10
           },
           {
             "name": "E",
-            "type": 10
+            "type": 11
           }
         ],
         "path": [
@@ -805,7 +871,7 @@
       }
     },
     {
-      "id": 9,
+      "id": 10,
       "type": {
         "def": {
           "tuple": []
@@ -813,7 +879,7 @@
       }
     },
     {
-      "id": 10,
+      "id": 11,
       "type": {
         "def": {
           "variant": {
@@ -829,14 +895,6 @@
           "ink_primitives",
           "LangError"
         ]
-      }
-    },
-    {
-      "id": 11,
-      "type": {
-        "def": {
-          "primitive": "u32"
-        }
       }
     },
     {
@@ -857,7 +915,7 @@
               {
                 "fields": [
                   {
-                    "type": 10
+                    "type": 11
                   }
                 ],
                 "index": 1,
@@ -873,7 +931,7 @@
           },
           {
             "name": "E",
-            "type": 10
+            "type": 11
           }
         ],
         "path": [
@@ -947,14 +1005,18 @@
               },
               {
                 "index": 4,
-                "name": "InvalidPermissions"
+                "name": "Initialization"
               },
               {
                 "index": 5,
-                "name": "InvalidRole"
+                "name": "InvalidPermissions"
               },
               {
                 "index": 6,
+                "name": "InvalidRole"
+              },
+              {
+                "index": 7,
                 "name": "NoChange"
               },
               {
@@ -964,7 +1026,7 @@
                     "typeName": "String"
                   }
                 ],
-                "index": 7,
+                "index": 8,
                 "name": "InkEnvError"
               }
             ]
@@ -989,9 +1051,7 @@
       "id": 16,
       "type": {
         "def": {
-          "sequence": {
-            "type": 2
-          }
+          "primitive": "u32"
         }
       }
     },
@@ -999,22 +1059,12 @@
       "id": 17,
       "type": {
         "def": {
-          "sequence": {
-            "type": 5
-          }
-        }
-      }
-    },
-    {
-      "id": 18,
-      "type": {
-        "def": {
           "variant": {
             "variants": [
               {
                 "fields": [
                   {
-                    "type": 19
+                    "type": 18
                   }
                 ],
                 "index": 0,
@@ -1023,7 +1073,7 @@
               {
                 "fields": [
                   {
-                    "type": 10
+                    "type": 11
                   }
                 ],
                 "index": 1,
@@ -1035,11 +1085,11 @@
         "params": [
           {
             "name": "T",
-            "type": 19
+            "type": 18
           },
           {
             "name": "E",
-            "type": 10
+            "type": 11
           }
         ],
         "path": [
@@ -1048,7 +1098,7 @@
       }
     },
     {
-      "id": 19,
+      "id": 18,
       "type": {
         "def": {
           "variant": {
@@ -1056,7 +1106,7 @@
               {
                 "fields": [
                   {
-                    "type": 9
+                    "type": 10
                   }
                 ],
                 "index": 0,
@@ -1077,7 +1127,7 @@
         "params": [
           {
             "name": "T",
-            "type": 9
+            "type": 10
           },
           {
             "name": "E",
@@ -1090,7 +1140,27 @@
       }
     },
     {
+      "id": 19,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 2
+          }
+        }
+      }
+    },
+    {
       "id": 20,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 5
+          }
+        }
+      }
+    },
+    {
+      "id": 21,
       "type": {
         "def": {
           "variant": {
@@ -1098,7 +1168,7 @@
               {
                 "fields": [
                   {
-                    "type": 21
+                    "type": 22
                   }
                 ],
                 "index": 0,
@@ -1107,7 +1177,7 @@
               {
                 "fields": [
                   {
-                    "type": 10
+                    "type": 11
                   }
                 ],
                 "index": 1,
@@ -1119,11 +1189,11 @@
         "params": [
           {
             "name": "T",
-            "type": 21
+            "type": 22
           },
           {
             "name": "E",
-            "type": 10
+            "type": 11
           }
         ],
         "path": [
@@ -1132,7 +1202,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 22,
       "type": {
         "def": {
           "tuple": [
@@ -1143,7 +1213,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 23,
       "type": {
         "def": {
           "variant": {
@@ -1171,7 +1241,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 24,
       "type": {
         "def": {
           "variant": {
@@ -1188,7 +1258,7 @@
               {
                 "fields": [
                   {
-                    "type": 10
+                    "type": 11
                   }
                 ],
                 "index": 1,
@@ -1204,7 +1274,7 @@
           },
           {
             "name": "E",
-            "type": 10
+            "type": 11
           }
         ],
         "path": [
@@ -1213,7 +1283,7 @@
       }
     },
     {
-      "id": 24,
+      "id": 25,
       "type": {
         "def": {
           "variant": {}

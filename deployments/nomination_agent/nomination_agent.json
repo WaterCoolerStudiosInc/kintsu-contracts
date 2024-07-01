@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x143433b9cd831df85c9c5ce7cac4187e028b4ec60d66fce6f60c970a491897c0",
+    "hash": "0x8fb8110a2e08c6204cf660f4b2e984c7c6b95c77dc2540c0fe9ff437f31f6abf",
     "language": "ink! 4.3.0",
     "compiler": "rustc 1.75.0",
     "build_info": {
@@ -65,15 +65,6 @@
                 "AccountId"
               ],
               "type": 0
-            }
-          },
-          {
-            "label": "pool_id",
-            "type": {
-              "displayName": [
-                "u32"
-              ],
-              "type": 3
             }
           },
           {
@@ -158,6 +149,32 @@
       "type": 7
     },
     "messages": [
+      {
+        "args": [
+          {
+            "label": "pool_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 3
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "INominationAgent::initialize",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 8
+        },
+        "selector": "0x00000000"
+      },
       {
         "args": [],
         "default": false,
@@ -443,9 +460,29 @@
             },
             {
               "layout": {
-                "leaf": {
-                  "key": "0x00000000",
-                  "ty": 3
+                "enum": {
+                  "dispatchKey": "0x00000000",
+                  "name": "Option",
+                  "variants": {
+                    "0": {
+                      "fields": [],
+                      "name": "None"
+                    },
+                    "1": {
+                      "fields": [
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x00000000",
+                              "ty": 3
+                            }
+                          },
+                          "name": "0"
+                        }
+                      ],
+                      "name": "Some"
+                    }
+                  }
                 }
               },
               "name": "pool_id"
@@ -710,6 +747,14 @@
               {
                 "index": 2,
                 "name": "Active"
+              },
+              {
+                "index": 3,
+                "name": "Initialized"
+              },
+              {
+                "index": 4,
+                "name": "NotInitialized"
               }
             ]
           }
