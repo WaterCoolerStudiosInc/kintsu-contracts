@@ -101,9 +101,9 @@ const main = async (validators: string[]) => {
     api,
     '',
     vault_instance,
-    'get_registry_contract',
+    'IVault::get_registry_contract',
   )
-  registry.address = decodeOutput(registry_contract_result, vault_instance, 'get_registry_contract').output
+  registry.address = decodeOutput(registry_contract_result, vault_instance, 'IVault::get_registry_contract').output
   const registry_instance = new ContractPromise(api, registry_data.abi, registry.address)
   console.log(`Registry Address: ${registry.address}`)
 
@@ -112,9 +112,9 @@ const main = async (validators: string[]) => {
     api,
     '',
     vault_instance,
-    'get_share_token_contract',
+    'IVault::get_share_token_contract',
   )
-  share_token.address = decodeOutput(share_token_contract_result, vault_instance, 'get_share_token_contract').output
+  share_token.address = decodeOutput(share_token_contract_result, vault_instance, 'IVault::get_share_token_contract').output
   console.log(`Share Token Address: ${share_token.address}`)
 
   console.log('===== Agent Configuration =====')
