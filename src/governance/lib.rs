@@ -10,18 +10,11 @@ pub mod governance {
     use governance_nft::{GovernanceNFT, GovernanceNFTRef};
     use governance_staking::{Staking, StakingRef};
     use ink::{
-        codegen::EmitEvent,
-        contract_ref,
-        env::{
+        codegen::EmitEvent, contract_ref, env::{
             debug_println,
             hash::{HashOutput, Sha2x256},
             hash_encoded, Error as InkEnvError,
-        },
-        prelude::{format, string::String, vec::Vec},
-      
-        reflect::ContractEventBase,
-        storage::Mapping,
-        ToAccountId,
+        }, prelude::{format, string::String, vec::Vec},reflect::ContractEventBase, storage::Mapping, ToAccountId
     };
     use multisig::{MultiSig, MultiSigRef};
 
@@ -119,6 +112,7 @@ pub mod governance {
     }
     #[ink(storage)]
     pub struct Governance {
+        pub temp_admin:AccountId,
         pub gov_nft: AccountId,
         pub vault: AccountId,
         pub staking: AccountId,
@@ -420,11 +414,12 @@ pub mod governance {
         ) -> Self {
             let caller = Self::env().caller();
 
-            let multisig_ref = MultiSigRef::new(Self::env().account_id(), registry, vault)
+            /**let multisig_ref = MultiSigRef::new(Self::env().account_id(), registry, vault)
                 .endowment(0)
                 .code_hash(multisig_hash)
                 .salt_bytes(&[9_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
                 .instantiate();
+            **/
             let staking_ref = StakingRef::new(
                 governance_token,
                 Self::env().account_id(),
@@ -437,9 +432,10 @@ pub mod governance {
             .instantiate();
             let _gov_nft=staking_ref.get_governance_nft();
             Self {
+                temp_admin:caller,
                 gov_nft: _gov_nft,
                 vault: vault,
-                multisig: MultiSigRef::to_account_id(&multisig_ref),
+                multisig:vault,
                 staking: StakingRef::to_account_id(&staking_ref),
                 execution_threshold: exec_threshold,
                 rejection_threshold: reject_threshold,
@@ -455,6 +451,15 @@ pub mod governance {
         #[ink(message)]
         pub fn get_multsig(&self)->AccountId{
             self.multisig
+        }
+        #[ink(message)]
+        pub fn set_multsig(&mut self,new_contract:AccountId) -> Result<(), GovernanceError>{
+            if Self::env().caller() != self.temp_admin {
+                return Err(GovernanceError::Unauthorized);
+            }
+            self.temp_admin= Self::env().account_id();
+            self.multisig=new_contract;
+            Ok(())
         }
         #[ink(message)]
         pub fn get_staking(&self)->AccountId{

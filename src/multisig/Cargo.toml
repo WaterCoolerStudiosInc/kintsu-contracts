@@ -5,7 +5,7 @@ authors = ["[your_name] <[your_email]>"]
 edition = "2021"
 
 [dependencies]
-ink = { version = "=4.3.0", default-features = false,features = ["ink-debug"] }
+ink = { version = "=4.3.0", default-features = false, features = ["ink-debug"] }
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = [
     "derive",
 ] }
@@ -14,7 +14,6 @@ scale-info = { version = "=2.11.2", default-features = false, features = [
 ], optional = true }
 psp34 = { git = "https://github.com/Cardinal-Cryptography/PSP34.git", default-features = false }
 
-
 psp22 = { version = "=0.2.1", default-features = false }
 [lib]
 name = "multisig"
@@ -22,5 +21,5 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = ["ink/std", "scale/std", "scale-info", "scale-info/std","psp34/std"]
+std = ["ink/std", "scale/std", "scale-info", "scale-info/std", "psp34/std"]
 ink-as-dependency = []

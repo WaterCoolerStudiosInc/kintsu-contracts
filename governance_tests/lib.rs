@@ -189,25 +189,32 @@ mod tests {
             None,
             &transcoder_governance().unwrap(),
         )?;
+        let multisig=sess.deploy(bytes_multisig(),"new",&[governance.to_string(),vault.to_string(),registry.to_string()],vec![1],None,&transcoder_multisig().unwrap()).unwrap();
         println!("{:?}", "!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        sess.set_transcoder(
-            governance.clone(),
-            &transcoder_governance().unwrap(),
-        );
         
         let mut sess = call_function(
             sess,
             &governance,
             &bob,
+            String::from("set_multsig"),
+            Some(vec![multisig.to_string()]),
+            None,
+            transcoder_governance(),
+        )
+        .unwrap();
+        let rr: Result<AccountId32, drink::errors::LangError> = sess.last_call_return().unwrap();
+        let stake_contract = rr.unwrap();
+        let mut sess = call_function(
+            sess,
+            &governance,
+            &alice,
             String::from("get_staking"),
             None,
             None,
             transcoder_governance_staking(),
         )
         .unwrap();
-        let rr: Result<AccountId32, drink::errors::LangError> = sess.last_call_return().unwrap();
-        let stake_contract = rr.unwrap();
-
+        /*
         let mut sess = call_function(
             sess,
             &stake_contract,
@@ -220,7 +227,7 @@ mod tests {
         .unwrap();
         let rr: Result<AccountId32, drink::errors::LangError> = sess.last_call_return().unwrap();
         let multisig = rr.unwrap();
-
+        **/
         sess.set_transcoder(
             stake_contract.clone(),
             &transcoder_governance_staking().unwrap(),

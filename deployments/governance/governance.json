@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x99c4b67d72a11f7e198fcd2ee3f3fb3f24ce923cef167539cb140e830c35eb24",
+    "hash": "0xa02c398a881560821daca09edd59b92c1ccd3505f0d5ca9bfb0ba8d61a464b19",
     "language": "ink! 4.3.0",
     "compiler": "rustc 1.75.0",
     "build_info": {
@@ -303,6 +303,32 @@
         "selector": "0x82c7f665"
       },
       {
+        "args": [
+          {
+            "label": "new_contract",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "set_multsig",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 17
+        },
+        "selector": "0x8cf58b87"
+      },
+      {
         "args": [],
         "default": false,
         "docs": [],
@@ -340,7 +366,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 17
+          "type": 21
         },
         "selector": "0x9d880359"
       },
@@ -356,7 +382,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 18
+          "type": 22
         },
         "selector": "0xc1c80143"
       },
@@ -382,7 +408,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 17
+          "type": 21
         },
         "selector": "0xa80380cc"
       },
@@ -417,7 +443,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 19
+          "type": 17
         },
         "selector": "0xf9fb13d3"
       },
@@ -461,7 +487,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 19
+          "type": 17
         },
         "selector": "0x083be260"
       }
@@ -472,6 +498,15 @@
       "layout": {
         "struct": {
           "fields": [
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 0
+                }
+              },
+              "name": "temp_admin"
+            },
             {
               "layout": {
                 "leaf": {
@@ -1087,7 +1122,7 @@
               {
                 "fields": [
                   {
-                    "type": 6
+                    "type": 18
                   }
                 ],
                 "index": 0,
@@ -1108,7 +1143,7 @@
         "params": [
           {
             "name": "T",
-            "type": 6
+            "type": 18
           },
           {
             "name": "E",
@@ -1129,90 +1164,6 @@
               {
                 "fields": [
                   {
-                    "type": 5
-                  }
-                ],
-                "index": 0,
-                "name": "Ok"
-              },
-              {
-                "fields": [
-                  {
-                    "type": 15
-                  }
-                ],
-                "index": 1,
-                "name": "Err"
-              }
-            ]
-          }
-        },
-        "params": [
-          {
-            "name": "T",
-            "type": 5
-          },
-          {
-            "name": "E",
-            "type": 15
-          }
-        ],
-        "path": [
-          "Result"
-        ]
-      }
-    },
-    {
-      "id": 19,
-      "type": {
-        "def": {
-          "variant": {
-            "variants": [
-              {
-                "fields": [
-                  {
-                    "type": 20
-                  }
-                ],
-                "index": 0,
-                "name": "Ok"
-              },
-              {
-                "fields": [
-                  {
-                    "type": 15
-                  }
-                ],
-                "index": 1,
-                "name": "Err"
-              }
-            ]
-          }
-        },
-        "params": [
-          {
-            "name": "T",
-            "type": 20
-          },
-          {
-            "name": "E",
-            "type": 15
-          }
-        ],
-        "path": [
-          "Result"
-        ]
-      }
-    },
-    {
-      "id": 20,
-      "type": {
-        "def": {
-          "variant": {
-            "variants": [
-              {
-                "fields": [
-                  {
                     "type": 14
                   }
                 ],
@@ -1222,7 +1173,7 @@
               {
                 "fields": [
                   {
-                    "type": 21
+                    "type": 19
                   }
                 ],
                 "index": 1,
@@ -1238,7 +1189,7 @@
           },
           {
             "name": "E",
-            "type": 21
+            "type": 19
           }
         ],
         "path": [
@@ -1247,7 +1198,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 19,
       "type": {
         "def": {
           "variant": {
@@ -1311,7 +1262,7 @@
               {
                 "fields": [
                   {
-                    "type": 22,
+                    "type": 20,
                     "typeName": "PSP22Error"
                   }
                 ],
@@ -1329,7 +1280,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 20,
       "type": {
         "def": {
           "variant": {
@@ -1377,6 +1328,90 @@
           "psp22",
           "errors",
           "PSP22Error"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 6
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 15
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 6
+          },
+          {
+            "name": "E",
+            "type": 15
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 5
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 15
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 5
+          },
+          {
+            "name": "E",
+            "type": 15
+          }
+        ],
+        "path": [
+          "Result"
         ]
       }
     },
