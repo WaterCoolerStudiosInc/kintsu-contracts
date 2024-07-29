@@ -4,17 +4,23 @@
 pub mod governance {
 
     use hex::*;
-    
+
     use vault::traits::IVault;
 
     use governance_nft::{GovernanceNFT, GovernanceNFTRef};
     use governance_staking::{Staking, StakingRef};
     use ink::{
-        codegen::EmitEvent, contract_ref, env::{
+        codegen::EmitEvent,
+        contract_ref,
+        env::{
             debug_println,
             hash::{HashOutput, Sha2x256},
             hash_encoded, Error as InkEnvError,
-        }, prelude::{format, string::String, vec::Vec},reflect::ContractEventBase, storage::Mapping, ToAccountId
+        },
+        prelude::{format, string::String, vec::Vec},
+        reflect::ContractEventBase,
+        storage::Mapping,
+        ToAccountId,
     };
     use multisig::{MultiSig, MultiSigRef};
 
@@ -112,11 +118,11 @@ pub mod governance {
     }
     #[ink(storage)]
     pub struct Governance {
-        pub temp_admin:AccountId,
+        pub temp_admin: AccountId,
         pub gov_nft: AccountId,
         pub vault: AccountId,
         pub staking: AccountId,
-        pub multisig: AccountId,
+        pub multisig: Option<AccountId>,
         pub execution_threshold: u128,
         pub rejection_threshold: u128,  // threshold of votes to pass
         pub acceptance_threshold: u128, //
@@ -220,14 +226,14 @@ pub mod governance {
             expired
         }
         fn remove_council_member(&self, member: &AccountId) -> Result<(), GovernanceError> {
-            let mut multisig: contract_ref!(MultiSig) = self.multisig.into();
+            let mut multisig: contract_ref!(MultiSig) = self.multisig.unwrap().into();
             if let Err(e) = multisig.remove_signer(*member) {
                 return Err(GovernanceError::MultiSigError);
             }
             Ok(())
         }
         fn add_council_member(&self, member: &AccountId) -> Result<(), GovernanceError> {
-            let mut multisig: contract_ref!(MultiSig) = self.multisig.into();
+            let mut multisig: contract_ref!(MultiSig) = self.multisig.unwrap().into();
             if let Err(e) = multisig.remove_signer(*member) {
                 return Err(GovernanceError::MultiSigError);
             }
@@ -235,7 +241,7 @@ pub mod governance {
         }
 
         fn change_multisig_threshold(&self, update: u16) -> Result<(), GovernanceError> {
-            let mut multisig: contract_ref!(MultiSig) = self.multisig.into();
+            let mut multisig: contract_ref!(MultiSig) = self.multisig.unwrap().into();
             if let Err(e) = multisig.update_threshold(update) {
                 return Err(GovernanceError::MultiSigError);
             }
@@ -246,7 +252,7 @@ pub mod governance {
             member: &AccountId,
             new_member: AccountId,
         ) -> Result<(), GovernanceError> {
-            let mut multisig: contract_ref!(MultiSig) = self.multisig.into();
+            let mut multisig: contract_ref!(MultiSig) = self.multisig.unwrap().into();
             if let Err(e) = multisig.replace_signer(*member, new_member) {
                 return Err(GovernanceError::MultiSigError);
             }
@@ -254,7 +260,7 @@ pub mod governance {
         }
         fn update_staking_rewards(&self, new_reward: u128) -> Result<(), GovernanceError> {
             let mut staking: contract_ref!(Staking) = self.staking.into();
-            if let Err(e)=  staking.update_rewards_rate(new_reward){
+            if let Err(e) = staking.update_rewards_rate(new_reward) {
                 return Err(GovernanceError::StakingError);
             }
             Ok(())
@@ -403,7 +409,6 @@ pub mod governance {
         pub fn new(
             vault: AccountId,
             registry: AccountId,
-            multisig_hash: Hash,
             governance_token: AccountId,
             gov_nft_hash: Hash,
             staking_hash: Hash,
@@ -414,28 +419,32 @@ pub mod governance {
         ) -> Self {
             let caller = Self::env().caller();
 
-            /**let multisig_ref = MultiSigRef::new(Self::env().account_id(), registry, vault)
+            let mut nft_ref: GovernanceNFTRef = GovernanceNFTRef::new(Self::env().account_id())
                 .endowment(0)
-                .code_hash(multisig_hash)
-                .salt_bytes(&[9_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
+                .code_hash(gov_nft_hash)
+                .salt_bytes(&[7_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
                 .instantiate();
-            **/
+
             let staking_ref = StakingRef::new(
                 governance_token,
                 Self::env().account_id(),
-                gov_nft_hash,
+                nft_ref.clone(),
                 interest_rate,
             )
             .endowment(0)
             .code_hash(staking_hash)
-            .salt_bytes(&[234_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
+            .salt_bytes(&[9_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
             .instantiate();
-            let _gov_nft=staking_ref.get_governance_nft();
+
+            nft_ref.set_admin(StakingRef::to_account_id(&staking_ref));
+
+            let _gov_nft = GovernanceNFTRef::to_account_id(&nft_ref);
+
             Self {
-                temp_admin:caller,
+                temp_admin: caller,
                 gov_nft: _gov_nft,
                 vault: vault,
-                multisig:vault,
+                multisig: None,
                 staking: StakingRef::to_account_id(&staking_ref),
                 execution_threshold: exec_threshold,
                 rejection_threshold: reject_threshold,
@@ -449,20 +458,20 @@ pub mod governance {
             }
         }
         #[ink(message)]
-        pub fn get_multsig(&self)->AccountId{
+        pub fn get_multsig(&self) -> Option<AccountId> {
             self.multisig
         }
         #[ink(message)]
-        pub fn set_multsig(&mut self,new_contract:AccountId) -> Result<(), GovernanceError>{
+        pub fn set_multsig(&mut self, new_contract: AccountId) -> Result<(), GovernanceError> {
             if Self::env().caller() != self.temp_admin {
                 return Err(GovernanceError::Unauthorized);
             }
-            self.temp_admin= Self::env().account_id();
-            self.multisig=new_contract;
+            self.temp_admin = Self::env().account_id();
+            self.multisig = Some(new_contract);
             Ok(())
         }
         #[ink(message)]
-        pub fn get_staking(&self)->AccountId{
+        pub fn get_staking(&self) -> AccountId {
             self.staking
         }
         #[ink(message)]

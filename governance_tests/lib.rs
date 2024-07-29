@@ -175,10 +175,8 @@ mod tests {
             &[
                 vault.to_string(),
                 registry.to_string(),
-                hash_multisig().to_string(),
                 gov_token.to_string(),
-                hash_governance_nft(),
-               
+                hash_governance_nft(),               
                 hash_governance_staking().to_string(),              
                 EXEC_THRESHOLD.to_string(),
                 REJECT_THRESHOLD.to_string(),

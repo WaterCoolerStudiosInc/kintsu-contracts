@@ -138,19 +138,14 @@ mod staking{
         pub fn new(
             governance_token: AccountId,
             governor:AccountId,
-            governance_nft_hash: Hash,
+            governance_nft:GovernanceNFTRef,
             interest_rate: u128,
         ) -> Self {
-            use ink::{storage::Mapping, ToAccountId};
-
+          
             let caller = Self::env().caller();
             let now = Self::env().block_timestamp();
 
-            let nft_ref = GovernanceNFTRef::new(Self::env().account_id())
-                .endowment(0)
-                .code_hash(governance_nft_hash)
-                .salt_bytes(&[9_u8.to_le_bytes().as_ref(), caller.as_ref()].concat()[..4])
-                .instantiate();
+            
 
             Self {
                 creation_time: now,
@@ -163,7 +158,7 @@ mod staking{
                 lst_accumulation_update: now,
                 owner: caller,
                 governance_token: governance_token,
-                nft: nft_ref,
+                nft: governance_nft,
                 governance_nfts: Mapping::new(),
                 unstake_requests: Mapping::new(),
                 last_reward_claim:Mapping::new()

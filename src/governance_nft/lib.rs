@@ -172,9 +172,16 @@ mod governance_nft {
              let events = self.data.burn(self.env().caller(), account, _id)?;
              self.emit_events(events);
              Ok(())          
-        }       
-    
-    }
+        }
+        #[ink(message,selector = 8888)]           
+        pub fn set_admin(&mut self,new_admin:AccountId) -> Result<(), PSP34Error> {
+            if self.env().caller() != self.admin {
+                return Err(PSP34Error::Custom(String::from("Unauthorized")));
+            }
+            self.admin=new_admin;
+            Ok(())
+        }
+    }   
 
     // (3)
     #[ink(event)]
