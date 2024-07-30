@@ -168,6 +168,16 @@ mod tests {
         interest_rate: u128,
          **/
          println!("{:?}", vault);
+
+        let governance_staking = sess.deploy(
+            bytes_governance_staking(),
+            "hash",
+            NO_ARGS,
+            vec![1],
+            None,
+            &transcoder_governance_staking().unwrap(),
+        )?;
+        println!("Deployed governance_staking hash");
          
         let governance = sess.deploy(
             bytes_governance(),
@@ -187,9 +197,11 @@ mod tests {
             None,
             &transcoder_governance().unwrap(),
         )?;
+        println!("Deployed Governance !!!!!!!!!!!!!!!!!!!!!!!!!!");
+
         let multisig=sess.deploy(bytes_multisig(),"new",&[governance.to_string(),vault.to_string(),registry.to_string()],vec![1],None,&transcoder_multisig().unwrap()).unwrap();
-        println!("{:?}", "!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        
+        println!("Deployed multisig");
+
         let mut sess = call_function(
             sess,
             &governance,

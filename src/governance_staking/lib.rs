@@ -15,6 +15,7 @@ mod staking{
         prelude::{string::String, vec::Vec},
         storage::Mapping,
     };
+    use ink::env::call::FromAccountId;
     use psp22::{PSP22Error, PSP22};
     use psp34::{Id, PSP34Error, PSP34};
 
@@ -162,6 +163,26 @@ mod staking{
                 governance_nfts: Mapping::new(),
                 unstake_requests: Mapping::new(),
                 last_reward_claim:Mapping::new()
+            }
+        }
+        #[ink(constructor)]
+        pub fn hash() -> Self {
+            let account_id = AccountId::from([0u8; 32]);
+            Self {
+                creation_time: 0,
+                governor: account_id,
+                reward_token_balance: 0,
+                staked_token_balance: 0,
+                rewards_per_second: 0,
+                reward_stake_accumulation: 0,
+                accumulated_rewards:0,
+                lst_accumulation_update: 0,
+                owner: account_id,
+                governance_token: account_id,
+                nft: GovernanceNFTRef::from_account_id(account_id),
+                governance_nfts: Mapping::new(),
+                unstake_requests: Mapping::new(),
+                last_reward_claim: Mapping::new()
             }
         }
         #[ink(message)]
